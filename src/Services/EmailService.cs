@@ -99,7 +99,6 @@ public class EmailService : IEmailService
             .Replace(EmailTemplateConstants.UserInfoPlaceholder.Website, _profile.Website)
             .Replace(EmailTemplateConstants.UserInfoPlaceholder.Github, _profile.Github)
             .Replace(EmailTemplateConstants.UserInfoPlaceholder.LinkedIn, _profile.LinkedIn)
-            .Replace(EmailTemplateConstants.UserInfoPlaceholder.Whatsapp, _profile.Whatsapp)
             .Replace(EmailTemplateConstants.UserInfoPlaceholder.Address, _profile.Address);
     }
 }

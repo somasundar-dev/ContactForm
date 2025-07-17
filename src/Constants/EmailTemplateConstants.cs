@@ -4,7 +4,7 @@ namespace Contact.API.Constants;
 
 public static class EmailTemplateConstants
 {
-    public const string Template1 = "Templates/Template1.html";
+    public const string Template1 = "Template1.html";
 
     public const string Subject = "Thank you for reaching out!";
 
@@ -23,7 +23,6 @@ public static class EmailTemplateConstants
         public const string Website = "#WEBSITE#";
         public const string Github = "#GITHUB#";
         public const string LinkedIn = "#LINKEDIN#";
-        public const string Whatsapp = "#WHATSAPP#";
         public const string Address = "#ADDRESS#";
     }
 
