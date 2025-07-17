@@ -2,7 +2,7 @@ using System;
 
 namespace Contact.API.Models;
 
-public class SmtpOptions
+public class EmailSettings
 {
     public string Host { get; set; } = string.Empty;
     public int Port { get; set; } = 587;

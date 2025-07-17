@@ -14,29 +14,29 @@ public class EmailService : IEmailService
 {
     private readonly ILogger<EmailService> _logger;
     private readonly UserInfoOptions _profile;
-    private readonly SmtpOptions _smtpOptions;
+    private readonly EmailSettings _emailSettings;
 
-    public EmailService(ILogger<EmailService> logger, IOptions<UserInfoOptions> profile, IOptions<SmtpOptions> smtpOptions)
+    public EmailService(ILogger<EmailService> logger, IOptions<UserInfoOptions> profile, IOptions<EmailSettings> emailSettings)
     {
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
         ArgumentNullException.ThrowIfNull(profile, nameof(profile));
-        ArgumentNullException.ThrowIfNull(smtpOptions, nameof(smtpOptions));
+        ArgumentNullException.ThrowIfNull(emailSettings, nameof(emailSettings));
 
         _logger = logger;
         _profile = profile.Value;
-        _smtpOptions = smtpOptions.Value;
+        _emailSettings = emailSettings.Value;
 
-        _logger.LogInformation("EmailService initialized with SMTP options: {0}", JsonSerializer.Serialize(smtpOptions.Value));
+        _logger.LogInformation("EmailService initialized with EmailSettings: {0}", JsonSerializer.Serialize(emailSettings.Value));
     }
 
     public async Task<bool> SendEmailAsync(EmailRequest request, string templateContent, CancellationToken ct)
     {
-        _logger.LogInformation("Preparing to send email to {0} from {1}", request.Email, _smtpOptions.Username);
+        _logger.LogInformation("Preparing to send email to {0} from {1}", request.Email, _emailSettings.Username);
 
         _logger.LogInformation("Request: {0}", JsonSerializer.Serialize(request));
         ct.ThrowIfCancellationRequested();
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(_smtpOptions.DisplayName, _smtpOptions.Username));
+        message.From.Add(new MailboxAddress(_emailSettings.DisplayName, _emailSettings.Username));
         message.To.Add(new MailboxAddress(request.Name, request.Email));
         message.Bcc.Add(new MailboxAddress(_profile.Name, _profile.Email));
         message.Subject = EmailTemplateConstants.Subject;
@@ -48,12 +48,12 @@ public class EmailService : IEmailService
         _logger.LogInformation("Connecting to SMTP server...");
         ct.ThrowIfCancellationRequested();
         using var client = new SmtpClient();
-        await client.ConnectAsync(_smtpOptions.Host, _smtpOptions.Port, SecureSocketOptions.StartTls);
+        await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, SecureSocketOptions.StartTls);
         _logger.LogInformation("Connected to SMTP server.");
 
         _logger.LogInformation("Authenticating SMTP client...");
         ct.ThrowIfCancellationRequested();
-        await client.AuthenticateAsync(_smtpOptions.Username, _smtpOptions.Password);
+        await client.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
         _logger.LogInformation("SMTP client authenticated.");
 
         _logger.LogInformation("Sending email...");

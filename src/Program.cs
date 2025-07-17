@@ -6,23 +6,22 @@ using Contact.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.Configure<SmtpOptions>(configuration.GetSection("SmtpOptions"));
+builder.Services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 builder.Services.Configure<UserInfoOptions>(configuration.GetSection("UserInfo"));
 builder.Services.AddCors(policy =>
 {
     policy.AddPolicy("Production", builder =>
     {
-        var allowedHosts = configuration["AllowedHosts"];
-        if (string.IsNullOrWhiteSpace(allowedHosts))
+        Console.WriteLine("Configuring CORS policy for production environment...");
+        var allowedOrigins = configuration["AllowedOrigins"];
+        if (string.IsNullOrWhiteSpace(allowedOrigins))
         {
-            ArgumentNullException.ThrowIfNull(allowedHosts, nameof(allowedHosts));
+            ArgumentNullException.ThrowIfNull(allowedOrigins, nameof(allowedOrigins));
         }
 
-        builder.WithOrigins(allowedHosts.Split(","))
+        builder.WithOrigins(allowedOrigins.Split(","))
                .AllowAnyMethod()
                .AllowAnyHeader();
     });
@@ -31,11 +30,7 @@ builder.Services.AddCors(policy =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-else
+if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
 }
@@ -58,17 +53,17 @@ app.MapPost("/send-email", async (EmailRequest emailRequest, CancellationToken c
         return Results.BadRequest(validationResults);
     }
 
-    var emailTemplate = await emailService.GetEmailTemplateAsync(EmailTemplateConstants.Template1, cancellationToken);
+    var emailContent = await emailService.GetEmailTemplateAsync(EmailTemplateConstants.Template1, cancellationToken);
 
-    emailTemplate = emailTemplate
+    emailContent = emailContent
         .Replace(EmailTemplateConstants.SubmitterPlaceholder.Name, emailRequest.Name)
         .Replace(EmailTemplateConstants.SubmitterPlaceholder.Email, emailRequest.Email)
         .Replace(EmailTemplateConstants.SubmitterPlaceholder.Message, emailRequest.Message);
 
-    var emailSent = await emailService.SendEmailAsync(emailRequest.Email, emailRequest.Name, emailTemplate, cancellationToken);
+    var emailSent = await emailService.SendEmailAsync(emailRequest, emailContent, cancellationToken);
     if (!emailSent)
     {
-        return Results.StatusCode(500);
+        return Results.BadRequest("Failed to send email.");
     }
     return Results.Ok("Email sent successfully.");
 });
