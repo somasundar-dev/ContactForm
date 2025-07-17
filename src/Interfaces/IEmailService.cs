@@ -5,7 +5,7 @@ namespace Contact.API.Interfaces;
 
 public interface IEmailService
 {
-    Task<bool> SendEmailAsync(string email, string name, string message, CancellationToken cancellationToken);
+    Task<bool> SendEmailAsync(EmailRequest request, string templateContent, CancellationToken cancellationToken);
     Task<string> GetEmailTemplateAsync(string templateName, CancellationToken cancellationToken);
 
 }

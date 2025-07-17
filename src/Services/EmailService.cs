@@ -3,13 +3,15 @@ using System.Text.Json;
 using Contact.API.Constants;
 using Contact.API.Interfaces;
 using Contact.API.Models;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Options;
+using MimeKit;
 
 namespace Contact.API.Services;
 
 public class EmailService : IEmailService
 {
-
     private readonly ILogger<EmailService> _logger;
     private readonly UserInfoOptions _profile;
     private readonly SmtpOptions _smtpOptions;
@@ -27,11 +29,40 @@ public class EmailService : IEmailService
         _logger.LogInformation("EmailService initialized with SMTP options: {0}", JsonSerializer.Serialize(smtpOptions.Value));
     }
 
-    public async Task<bool> SendEmailAsync(string email, string name, string message, CancellationToken ct)
+    public async Task<bool> SendEmailAsync(EmailRequest request, string templateContent, CancellationToken ct)
     {
+        _logger.LogInformation("Preparing to send email to {0} from {1}", request.Email, _smtpOptions.Username);
+
+        _logger.LogInformation("Request: {0}", JsonSerializer.Serialize(request));
         ct.ThrowIfCancellationRequested();
-        // Simulate sending email
-        await Task.Delay(1000, ct);
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress(_smtpOptions.DisplayName, _smtpOptions.Username));
+        message.To.Add(new MailboxAddress(request.Name, request.Email));
+        message.Bcc.Add(new MailboxAddress(_profile.Name, _profile.Email));
+        message.Subject = EmailTemplateConstants.Subject;
+        _logger.LogInformation("Email subject set to: {0}", EmailTemplateConstants.Subject);
+
+        var bodyBuilder = new BodyBuilder { HtmlBody = templateContent };
+        message.Body = bodyBuilder.ToMessageBody();
+
+        _logger.LogInformation("Connecting to SMTP server...");
+        ct.ThrowIfCancellationRequested();
+        using var client = new SmtpClient();
+        await client.ConnectAsync(_smtpOptions.Host, _smtpOptions.Port, SecureSocketOptions.StartTls);
+        _logger.LogInformation("Connected to SMTP server.");
+
+        _logger.LogInformation("Authenticating SMTP client...");
+        ct.ThrowIfCancellationRequested();
+        await client.AuthenticateAsync(_smtpOptions.Username, _smtpOptions.Password);
+        _logger.LogInformation("SMTP client authenticated.");
+
+        _logger.LogInformation("Sending email...");
+        ct.ThrowIfCancellationRequested();
+        await client.SendAsync(message);
+        _logger.LogInformation("Email sent successfully.");
+
+        client.Disconnect(true);
+        _logger.LogInformation("Disconnected from SMTP server.");
         return true;
     }
 
