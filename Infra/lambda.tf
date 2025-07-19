@@ -20,7 +20,6 @@ resource "aws_lambda_function" "contact_form_api_function" {
       UserInfo__Contact          = var.profile_Contact
       UserInfo__LinkedIn         = var.profile_LinkedIn
       UserInfo__GitHub           = var.profile_GitHub
-      UserInfo__WhatsApp         = var.profile_WhatsApp
       UserInfo__Address          = var.profile_Address
       UserInfo__Website          = var.profile_Website
       AllowedOrigins             = var.cors_Origins
@@ -28,13 +27,7 @@ resource "aws_lambda_function" "contact_form_api_function" {
   }
 
   tags = {
-    "deployment:source"        = var.tags_deployment_source
-    "deployment:type"          = "terraform"
-    "reference:owner"          = var.tags_reference_owner
-    "reference:domain"         = var.tags_reference_domain
-    "reference:subdomain"      = var.tags_reference_subdomain
-    "reference:application"    = var.tags_reference_application
-    "reference:authentication" = var.tags_reference_authentication
-    "reference:contact"        = var.tags_reference_contact
+    "deployment:source" = var.tags_deployment_source
+    "deployment:type"   = "terraform"
   }
 }

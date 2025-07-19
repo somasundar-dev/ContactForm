@@ -13,17 +13,7 @@ variable "profile_Email" {}
 variable "profile_Contact" {}
 variable "profile_LinkedIn" {}
 variable "profile_GitHub" {}
-variable "profile_WhatsApp" {}
 variable "profile_Address" {}
 variable "profile_Website" {}
 variable "cors_Origins" {}
-variable "cors_Methods" {}
 variable "tags_deployment_source" {}
-variable "tags_reference_owner" {}
-variable "tags_reference_domain" {}
-variable "tags_reference_subdomain" {}
-variable "tags_reference_application" {}
-variable "tags_reference_authentication" {}
-variable "tags_reference_contact" {}
-variable "tags_reference_application_name" {}
-variable "terraform_state_bucket" {}
