@@ -2,7 +2,7 @@ resource "aws_lambda_function" "contact_form_api_function" {
   filename      = "${var.aws_prefix}_contact_form_api_function_${var.environment}.zip"
   function_name = "${var.aws_prefix}_contact_form_api_function_${var.environment}"
   role          = aws_iam_role.iam_for_lambda_role.arn
-  runtime       = "dotnet8"
+  runtime       = var.dotnet_runtime
   handler       = var.lambda_function_handler_name
 
   environment {
