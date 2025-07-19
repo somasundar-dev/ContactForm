@@ -7,24 +7,23 @@ resource "aws_lambda_function" "contact_form_api_function" {
 
   environment {
     variables = {
-      ASPNETCORE_ENVIRONMENT = var.environment
-      aws__Region            = var.region
-      smtpInfo__Host         = var.smtpInfo_Host
-      smtpInfo__Port         = var.smtpInfo_Port
-      smtpInfo__DisplayName  = var.smtpInfo_DisplayName
-      smtpInfo__Username     = var.smtpInfo_Username
-      smtpInfo__Password     = var.smtpInfo_Password
-      smtpInfo__UseSSL       = var.smtpInfo_UseSSL
-      profile__Name          = var.profile_Name
-      profile__Email         = var.profile_Email
-      profile__Contact       = var.profile_Contact
-      profile__LinkedIn      = var.profile_LinkedIn
-      profile__GitHub        = var.profile_GitHub
-      profile__WhatsApp      = var.profile_WhatsApp
-      profile__Address       = var.profile_Address
-      profile__Website       = var.profile_Website
-      cors__Origins          = var.cors_Origins
-      cors__Methods          = var.cors_Methods
+      ASPNETCORE_ENVIRONMENT     = var.environment
+      aws__Region                = var.region
+      EmailSettings__Host        = var.smtpInfo_Host
+      EmailSettings__Port        = var.smtpInfo_Port
+      EmailSettings__DisplayName = var.smtpInfo_DisplayName
+      EmailSettings__Username    = var.smtpInfo_Username
+      EmailSettings__Password    = var.smtpInfo_Password
+      EmailSettings__UseSSL      = var.smtpInfo_UseSSL
+      UserInfo__Name             = var.profile_Name
+      UserInfo__Email            = var.profile_Email
+      UserInfo__Contact          = var.profile_Contact
+      UserInfo__LinkedIn         = var.profile_LinkedIn
+      UserInfo__GitHub           = var.profile_GitHub
+      UserInfo__WhatsApp         = var.profile_WhatsApp
+      UserInfo__Address          = var.profile_Address
+      UserInfo__Website          = var.profile_Website
+      AllowedOrigins             = var.cors_Origins
     }
   }
 
