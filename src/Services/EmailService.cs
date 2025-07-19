@@ -89,8 +89,8 @@ public class EmailService : IEmailService
     private string ReplacePlaceholders(string template)
     {
         _logger.LogInformation("Replacing placeholders in template.");
-        _logger.LogInformation("Template: {0}", template);
-        _logger.LogInformation("Profile: {0}", JsonSerializer.Serialize(_profile));
+        // _logger.LogInformation("Template: {0}", template);
+        // _logger.LogInformation("Profile: {0}", JsonSerializer.Serialize(_profile));
 
         return template
             .Replace(EmailTemplateConstants.UserInfoPlaceholder.Name, _profile.Name)
