@@ -4,6 +4,7 @@ resource "aws_lambda_function" "contact_form_api_function" {
   role          = aws_iam_role.iam_for_lambda_role.arn
   runtime       = var.dotnet_runtime
   handler       = var.lambda_function_handler_name
+  timeout       = 30
 
   environment {
     variables = {
