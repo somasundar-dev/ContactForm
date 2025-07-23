@@ -18,3 +18,6 @@ variable "profile_Website" {}
 variable "cors_Origins" {}
 variable "tags_deployment_source" {}
 variable "dotnet_runtime" {}
+variable "bucket_name" {}
+variable "app_name" {}
+variable "app_version" {}

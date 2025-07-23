@@ -1,10 +1,18 @@
-resource "aws_lambda_function" "contact_form_api_function" {
-  filename      = "${var.aws_prefix}_contact_form_api_function_${var.environment}.zip"
-  function_name = "${var.aws_prefix}_contact_form_api_function_${var.environment}"
+resource "aws_lambda_function" "lambda_function" {
+  depends_on = [
+    aws_iam_role.iam_for_lambda_role,
+    aws_iam_role_policy_attachment.lambda_execution_access,
+    null_resource.sync_s3_bucket
+  ]
+  function_name = "${var.aws_prefix}-${var.app_name}-function-${var.environment}"
   role          = aws_iam_role.iam_for_lambda_role.arn
   runtime       = var.dotnet_runtime
   handler       = var.lambda_function_handler_name
   timeout       = 30
+
+  # Use existing S3 bucket + key
+  s3_bucket = var.bucket_name
+  s3_key    = "/lambda/${var.app_name}/${var.app_version}/${var.environment}/Publish.zip"
 
   environment {
     variables = {
@@ -28,7 +36,11 @@ resource "aws_lambda_function" "contact_form_api_function" {
   }
 
   tags = {
-    "deployment:source" = var.tags_deployment_source
-    "deployment:type"   = "terraform"
+    "deployment:source"      = var.tags_deployment_source
+    "deployment:type"        = "terraform"
+    "deployment:app"         = var.app_name
+    "deployment:version"     = var.app_version
+    "deployment:environment" = var.environment
+    "deployment:region"      = var.region
   }
 }
