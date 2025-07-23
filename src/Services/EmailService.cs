@@ -82,7 +82,7 @@ public class EmailService : IEmailService
         ct.ThrowIfCancellationRequested();
         content = ReplacePlaceholders(content);
         _logger.LogInformation("Template file processed successfully: {0}", templatePath);
-        _logger.LogInformation("Processed content: {0}", content);
+        // _logger.LogInformation("Processed content: {0}", content);
         return content;
     }
 
