@@ -1,0 +1,116 @@
+name: Deploy ContactForm API
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build the project
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test src/ContactForm.Tests/ContactForm.Tests.csproj --configuration Release --no-build --verbosity normal
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish the project
+        run: dotnet publish src/ContactForm/ContactForm.csproj --configuration Release
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IDENTITY_PROVIDER_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Version
+        run: terraform version
+
+      - name: set Build Version
+        id: get_version
+        run: |
+          VERSION=$(date +"%y%m.%d").${{ github.run_number }}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate Terraform Variables
+        uses: Somasundar-Projects/replace-vars-action@v1.1.1
+        with:
+          input-file: "./Infra/variables.tfvars"
+          output-file: "./Infra/variables.tfvars"
+        env:
+          region: ${{ secrets.AWS_REGION }}
+          environment: "prod"
+          aws_prefix: ${{ secrets.AWS_PREFIX }}
+          smtpInfo_Host: ${{ secrets.SMTPINFO_HOST }}
+          smtpInfo_Port: ${{ secrets.SMTPINFO_PORT }}
+          smtpInfo_DisplayName: ${{ secrets.SMTPINFO_DISPLAYNAME }}
+          smtpInfo_Username: ${{ secrets.SMTPINFO_USERNAME }}
+          smtpInfo_Password: ${{ secrets.SMTPINFO_PASSWORD }}
+          smtpInfo_UseSSL: ${{ secrets.SMTPINFO_USESSL }}
+          profile_Name: ${{ secrets.PROFILE_NAME }}
+          profile_Email: ${{ secrets.PROFILE_EMAIL }}
+          profile_Contact: ${{ secrets.PROFILE_CONTACT }}
+          profile_LinkedIn: ${{ secrets.PROFILE_LINKEDIN }}
+          profile_GitHub: ${{ secrets.PROFILE_GITHUB }}
+          profile_Address: ${{ secrets.PROFILE_ADDRESS }}
+          profile_Website: ${{ secrets.PROFILE_WEBSITE }}
+          cors_Origins: ${{ secrets.CORS_ORIGINS }}
+          tags_deployment_source: "GitHub Terraform Action"
+          lambda_function_handler_name: ${{ secrets.LAMBDA_FUNCTION_HANDLER_NAME }}
+          dotnet_runtime: "dotnet8"
+          bucket_name: ${{ secrets.BUCKET_NAME }}
+          app_name: "contact-form"
+          app_version: ${{ steps.get_version.outputs.version }}
+
+      - name: Terraform Init with s3 backend
+        working-directory: Infra
+        run: |
+          terraform init -backend-config="bucket=${{secrets.BUCKET_NAME}}" -backend-config="key=${{secrets.TERRAFORM_BUCKET_KEY}}" -backend-config="region=${{secrets.AWS_REGION}}" -backend-config="encrypt=true" -backend-config="use_lockfile=true"
+
+      - name: Terraform Format
+        working-directory: Infra
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        working-directory: Infra
+        run: terraform validate
+
+      - name: Terraform Plan Apply
+        working-directory: Infra
+        run: terraform plan -out=tfplan -var-file="variables.tfvars"
+
+      #   - name: Terraform Plan Destroy
+      #     working-directory: Infra
+      #     run: terraform plan -out=tfplan -var-file="variables.tfvars" -destroy
+
+      - name: Terraform Apply
+        working-directory: Infra
+        run: terraform apply -auto-approve tfplan
