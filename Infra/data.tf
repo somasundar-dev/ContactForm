@@ -29,6 +29,6 @@ resource "null_resource" "sync_s3_bucket" {
   }
 
   provisioner "local-exec" {
-    command = "aws s3 cp ${data.archive_file.lambda.output_path} s3://${var.bucket_name}/lambda/${var.app_name}/${var.app_version}/${var.environment}/Publish.zip"
+    command = "aws s3 cp ${data.archive_file.lambda.output_path} s3://${var.bucket_name}/artifacts/${var.app_name}/${var.app_version}/${var.environment}/Publish.zip"
   }
 }
