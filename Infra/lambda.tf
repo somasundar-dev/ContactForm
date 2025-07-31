@@ -12,7 +12,7 @@ resource "aws_lambda_function" "lambda_function" {
 
   # Use existing S3 bucket + key
   s3_bucket = var.bucket_name
-  s3_key    = "lambda/${var.app_name}/${var.app_version}/${var.environment}/Publish.zip"
+  s3_key    = "artifacts/${var.app_name}/${var.app_version}/${var.environment}/Publish.zip"
 
   environment {
     variables = {
